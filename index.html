@@ -1,0 +1,2429 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PRESENSI-GP ANSOR V.6.0 | PC GP ANSOR KABUPATEN BOGOR</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Html5-Qrcode Scanner -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- html2canvas untuk Download Gambar -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- QrCode.js library untuk reliable generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- SheetJS (xlsx) untuk Ekspor Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- ApexCharts untuk Grafik Interaktif -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- Leaflet.js CSS & JS untuk Peta Geografis Premium -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+        /* Override template Blogger bawaan agar aplikasi tampil penuh */
+        #header-wrapper, #sidebar-wrapper, .footer, .comment-outer, .tabs-outer, .header-outer, .content-hover, .blog-pager {
+            display: none !important;
+        }
+        .main-outer {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+        }
+        .post {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        /* Efek Transisi Mulus */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom Glowing Scanner Frame */
+        .scanner-glow {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+            border-color: rgba(16, 185, 129, 0.8);
+        }
+        .scan-line {
+            height: 3px;
+            background: linear-gradient(to right, transparent, #10b981, transparent);
+            animation: scanMove 2s linear infinite;
+        }
+        /* Memastikan tabel selalu responsif dan scrollable tanpa merusak layout */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        @keyframes scanMove {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
+        }
+
+        /* CUSTOM LEAFLET MAP DESIGN FOR BOGOR REGENCY */
+        #geoDistributionMap {
+            background-color: #f8fafc;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+        }
+        .leaflet-container {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+
+        /* MEDIA PRINT YANG DIOPTIMALKAN UNTUK HASIL CETAK YANG PRESISI */
+        @media print {
+            .no-print { display: none !important; }
+            
+            body { 
+                background: white !important; 
+                color: black !important; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                overflow: visible !important;
+            }
+            
+            #mainSidebar, #topNavbar, #mobileNav, #desktopHamburger, #desktopLogoutBtn, #sidebarBackdrop {
+                display: none !important;
+            }
+            
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+
+            .table-container { 
+                overflow: visible !important; 
+                width: 100% !important;
+            }
+
+            table {
+                width: 100% !important;
+                table-layout: auto !important;
+            }
+
+            body.print-rekap {
+                padding-left: 0 !important;
+            }
+            body.print-rekap > *:not(main) {
+                display: none !important;
+            }
+            body.print-rekap main > *:not(#view-rekap) {
+                display: none !important;
+            }
+            body.print-rekap #view-rekap > *:not(#printArea) {
+                display: none !important;
+            }
+            body.print-rekap #printArea {
+                display: block !important;
+                position: relative !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            body.print-idcard {
+                padding-left: 0 !important;
+            }
+            body.print-idcard > *:not(#modalIdCard) {
+                display: none !important;
+            }
+            body.print-idcard #modalIdCard { 
+                display: block !important; 
+                position: absolute !important; 
+                top: 0 !important; 
+                left: 0 !important; 
+                width: 100% !important; 
+                height: 100% !important; 
+                background: white !important; 
+                z-index: 9999 !important; 
+                padding: 20px !important; 
+            }
+            body.print-idcard #modalIdCard * { 
+                display: block !important; 
+            }
+            body.print-idcard #idCardRender {
+                box-shadow: none !important;
+                border: 1px solid #cbd5e1 !important;
+                margin: 0 auto !important;
+            }
+        }
+
+        #mainSidebar {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .sidebar-hidden {
+            transform: translateX(-100%) !important;
+        }
+        .body-expanded {
+            padding-left: 0 !important;
+        }
+        @media (max-width: 768px) {
+            #mainSidebar {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                height: 100vh !important;
+                transform: translateX(-100%);
+                display: flex !important;
+                z-index: 50 !important;
+            }
+            #mainSidebar.active {
+                transform: translateX(0) !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col pb-20 md:pb-0 transition-all duration-300">
+
+    <!-- THUMBNAIL POSTINGAN BLOGGER (TERSEMBUNYI) -->
+    <div style="display:none;">
+        <img src="https://placehold.co/600x400/047857/ffffff?text=PRESENSI-GPANSOR+PRO+V6" alt="PRESENSI-GP ANSOR V.6.0 Thumbnail" />
+        <p>Sistem Informasi Registrasi, Presensi Real-Time, dan Manajemen Kegiatan Kaderisasi Pimpinan Cabang GP Ansor Kabupaten Bogor.</p>
+    </div>
+
+    <!-- TOP NAVBAR UNTUK MODE MOBILE -->
+    <div class="bg-slate-900 text-white px-4 py-3 flex items-center justify-between no-print sticky top-0 z-20 shadow animate-fade-in hidden" id="topNavbar">
+        <div class="flex items-center space-x-3">
+            <button onclick="toggleSidebar(true)" class="p-1.5 rounded-lg hover:bg-slate-800 focus:outline-none text-emerald-400">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+            <span class="font-bold text-sm tracking-wide">PRESENSI-GP ANSOR PRO</span>
+        </div>
+        <div class="flex items-center space-x-2">
+            <span class="text-[10px] bg-emerald-600 px-2 py-0.5 rounded font-extrabold animate-pulse">ACTIVE</span>
+        </div>
+    </div>
+
+    <!-- TOMBOL HAMBURGER MENGAPUNG -->
+    <button onclick="toggleSidebar(true)" id="desktopHamburger" class="fixed top-4 left-4 z-40 p-2.5 bg-slate-900 text-emerald-400 rounded-lg shadow-lg hidden no-print hover:bg-slate-800 transition">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+    </button>
+
+    <!-- BACKDROP SIDEBAR -->
+    <div id="sidebarBackdrop" onclick="toggleSidebar(false)" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-30 hidden no-print transition-opacity"></div>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside id="mainSidebar" class="fixed top-0 left-0 bottom-0 w-64 bg-slate-900 text-white flex-col z-40 hidden no-print shadow-2xl">
+        <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+            <div class="flex items-center space-x-3">
+                <div id="sidebarLogoContainer" class="w-10 h-10 flex-shrink-0 bg-white/10 rounded-lg p-1 flex items-center justify-center text-white"></div>
+                <div>
+                    <h1 class="font-bold text-sm leading-tight tracking-wider text-emerald-400" id="sidebarAppName">PRESENSI-GP ANSOR</h1>
+                    <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-widest">Kaderisasi Hub</span>
+                </div>
+            </div>
+            <button id="btnCloseSidebarMobile" onclick="toggleSidebar(false)" type="button" class="md:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition active:bg-slate-700 cursor-pointer z-50">
+                <i data-lucide="x" class="w-6 h-6 pointer-events-none"></i>
+            </button>
+        </div>
+        <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto" id="sidebarNavLinks"></nav>
+        <div class="p-4 border-t border-slate-800 bg-slate-950 flex items-center justify-between">
+            <div class="flex items-center space-x-2 truncate">
+                <div class="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center font-bold text-xs text-white uppercase" id="avatarUser">A</div>
+                <div class="truncate">
+                    <p class="text-xs font-semibold leading-none truncate" id="profileName">Administrator</p>
+                    <span class="text-[9px] text-slate-400 capitalize" id="profileRole">Super Admin</span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-1">
+                <button onclick="handleLogout()" class="p-1.5 text-slate-400 hover:text-amber-400 rounded-md hover:bg-slate-800 transition" title="Keluar / Logout">
+                    <i data-lucide="log-out" class="w-4.5 h-4.5"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <nav id="mobileNav" class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around p-2 z-30 md:hidden no-print hidden"></nav>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="flex-1 p-4 md:p-8 w-full max-w-7xl mx-auto">
+        
+        <!-- ================= VIEW: LOGIN ================= -->
+        <section id="view-login" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat" style="background-image: url('login.jpg');">
+            <div class="absolute inset-0 bg-slate-950/75 backdrop-blur-[1px]"></div>
+            
+            <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden border border-white/10 animate-fade-in relative z-10">
+                <div class="bg-[#05ad7e] px-6 py-8 text-center text-white relative">
+                    <div class="mx-auto w-16 h-16 bg-white rounded-2xl flex items-center justify-center p-2 shadow-lg mb-3 text-slate-900" id="loginLogoContainer"></div>
+                    <h2 class="text-xl font-bold tracking-tight" id="loginAppName">PRESENSI GP ANSOR PRO</h2>
+                    <p class="text-xs text-emerald-100/80 mt-1 uppercase tracking-widest font-medium">Gateway Sistem Presence</p>
+                </div>
+                <form id="formLogin" onsubmit="handleLogin(event)" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Username</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i data-lucide="user" class="w-4 h-4"></i></span>
+                            <input type="text" id="loginUsername" required class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Username">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i data-lucide="lock" class="w-4 h-4"></i></span>
+                            <input type="password" id="loginPassword" required class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <button type="submit" id="btnLoginSubmit" class="w-full bg-[#009688] hover:bg-[#00796b] text-white py-2.5 rounded-lg text-sm font-semibold transition shadow-md flex items-center justify-center space-x-2">
+                        <span>MASUK SISTEM</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                    <div class="text-center mt-2">
+                        <span class="text-[10px] text-slate-400 font-medium">Presensi GP Ansor Enterprise System © Septa Aji</span>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= VIEW: DASHBOARD ================= -->
+        <section id="view-dashboard" class="view-content hidden space-y-6 fade-in">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-200 pb-4">
+                <div>
+                    <h2 class="text-2xl font-extrabold tracking-tight text-slate-900 uppercase">Dashboard Utama</h2>
+                    <p class="text-xs font-semibold text-slate-500 mt-0.5" id="txtHariIni">Memuat kalender...</p>
+                </div>
+                <div class="mt-3 md:mt-0 flex items-center bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-200 text-xs font-bold shadow-sm">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-2"></span> System Active Real-Time
+                </div>
+            </div>
+
+            <!-- CARD DETAIL SESI BERJALAN -->
+            <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 rounded-2xl p-6 text-white shadow-xl flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div class="space-y-2 flex-1">
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2.5 py-0.5 bg-amber-500 text-slate-950 font-bold text-[10px] rounded-full uppercase tracking-wider shadow-sm" id="dashJenisKaderisasi">PKD</span>
+                        <span class="text-xs font-medium text-emerald-300 flex items-center"><i data-lucide="play-circle" class="w-3.5 h-3.5 mr-1 animate-pulse"></i> SESI BERJALAN AKTIF</span>
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-black text-amber-400 tracking-wide" id="dashNamaMateri">Ke-Ansor-an & Kebanseran</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-sm text-slate-300">
+                        <div class="flex items-center"><i data-lucide="user" class="w-4 h-4 text-emerald-400 mr-2"></i> <span id="dashInstruktur">Instruktur: -</span></div>
+                        <div class="flex items-center"><i data-lucide="layers" class="w-4 h-4 text-emerald-400 mr-2"></i> <span id="dashSesiKe">Sesi Pertemuan Ke-1</span></div>
+                        <div class="flex items-center"><i data-lucide="clock" class="w-4 h-4 text-emerald-400 mr-2"></i> <span id="dashWaktuMulai">Mulai Jam: 08:00 WIB</span></div>
+                        <div class="flex items-center"><i data-lucide="coffee" class="w-4 h-4 text-emerald-400 mr-2"></i> <span id="dashRestLimit">Batas Izin Istirahat: 15 Menit</span></div>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center justify-center bg-white/5 border border-white/10 p-4 rounded-xl min-w-[160px]">
+                    <span class="text-xs text-slate-400 font-bold tracking-widest uppercase">Pencapaian</span>
+                    <div class="relative flex items-center justify-center my-2">
+                        <div class="w-20 h-20 rounded-full border-4 border-emerald-500/20 flex items-center justify-center border-t-emerald-400 animate-pulse">
+                            <span class="text-xl font-extrabold text-white" id="dashPersenHadir">0%</span>
+                        </div>
+                    </div>
+                    <span class="text-[10px] text-emerald-300 font-medium" id="dashRatioHadir">0 dari 0 Kuota</span>
+                </div>
+            </div>
+
+            <!-- STATISTIK RINGKASAN CARDS -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-4 hover:border-emerald-300 transition group">
+                    <div class="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition"><i data-lucide="users" class="w-6 h-6"></i></div>
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Peserta</p>
+                        <h4 class="text-xl font-bold text-slate-900 mt-0.5" id="statTotal">0</h4>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-4 hover:border-emerald-300 transition group">
+                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition"><i data-lucide="user-check" class="w-6 h-6"></i></div>
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Hadir</p>
+                        <h4 class="text-xl font-bold text-slate-900 mt-0.5" id="statHadir">0</h4>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-4 hover:border-emerald-300 transition group">
+                    <div class="p-3 bg-amber-50 text-amber-600 rounded-xl group-hover:bg-amber-600 group-hover:text-white transition"><i data-lucide="clock" class="w-6 h-6"></i></div>
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tepat Waktu</p>
+                        <h4 class="text-xl font-bold text-slate-900 mt-0.5" id="statTepat">0</h4>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-4 hover:border-emerald-300 transition group">
+                    <div class="p-3 bg-rose-50 text-rose-600 rounded-xl group-hover:bg-rose-600 group-hover:text-white transition"><i data-lucide="user-x" class="w-6 h-6"></i></div>
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Terlambat</p>
+                        <h4 class="text-xl font-bold text-slate-900 mt-0.5" id="statTerlambat">0</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GEOGRAPHIC DISTRIBUTION MAP -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm col-span-1 lg:col-span-2">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-sm tracking-wide text-slate-700 flex items-center"><i data-lucide="map-pin" class="w-4 h-4 mr-2 text-emerald-500"></i> Distribusi Geografis PAC (Kabupaten Bogor)</h3>
+                    <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded font-bold uppercase">40 Kecamatan Teritorial</span>
+                </div>
+                <div id="geoDistributionMap" class="w-full h-[350px] rounded-xl border border-slate-200 shadow-inner" style="z-index: 10;"></div>
+                <p class="text-[10px] text-slate-400 mt-2 italic">*Radius lingkaran menunjukkan densitas delegasi PAC yang hadir pada sesi aktif.</p>
+            </div>
+
+            <!-- GRAFIK STATISTIK -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-sm tracking-wide text-slate-700 mb-4 flex items-center"><i data-lucide="bar-chart-3" class="w-4 h-4 mr-2 text-emerald-500"></i> Statistik Status Kehadiran</h3>
+                    <div id="chartKehadiran" class="w-full"></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-sm tracking-wide text-slate-700 mb-4 flex items-center"><i data-lucide="trending-up" class="w-4 h-4 mr-2 text-emerald-500"></i> Trend Grafik Kehadiran (Per Sesi)</h3>
+                    <div id="chartTrend" class="w-full"></div>
+                </div>
+            </div>
+
+            <!-- TOMBOL RESET APLIKASI LOKAL -->
+            <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                    <h4 class="font-bold text-sm text-rose-950 uppercase flex items-center"><i data-lucide="trash-2" class="w-4 h-4 mr-1.5 text-rose-600"></i> Manajemen Cache / Reset Lokal</h4>
+                    <p class="text-[11px] text-rose-700 mt-0.5">Mengosongkan seluruh memori lokal di browser ini agar siap untuk agenda baru. **Data Anda pada cloud Google Spreadsheet aman dan tidak terpengaruh**.</p>
+                </div>
+                <button onclick="handleResetLocalState()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl uppercase tracking-wider transition shrink-0 flex items-center shadow-sm">
+                    <i data-lucide="refresh-ccw" class="w-3.5 h-3.5 mr-1.5"></i> Clear / Reset Aplikasi
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= VIEW: SCAN SCANNER ================= -->
+        <section id="view-scan" class="view-content hidden space-y-6 fade-in">
+            <div class="border-b border-slate-200 pb-4">
+                <h2 class="text-2xl font-extrabold tracking-tight text-slate-900 uppercase">Scan QR Code Kehadiran</h2>
+                <p class="text-xs font-semibold text-slate-500 mt-0.5">Arahkan kartu QR Code peserta ke kamera pemindai smartphone Anda.</p>
+            </div>
+
+            <!-- AREA NOTIFIKASI PANDUAN AKSES iPHONE (iOS) -->
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 leading-relaxed space-y-1.5">
+                <p class="font-bold flex items-center text-amber-800"><i data-lucide="alert-circle" class="w-4.5 h-4.5 mr-1.5"></i> PENTING UNTUK PENGGUNA iPHONE / iOS:</p>
+                <p>Jika dibuka lewat aplikasi chat seperti <strong>WhatsApp/Telegram</strong>, akses kamera biasanya diblokir oleh sistem keamanan Apple. Silakan ketuk <strong>ikon Safari/Kompas</strong> di pojok kanan bawah layar chat Anda untuk berpindah ke Safari Utama.</p>
+                <p class="font-medium text-slate-700">Sebagai alternatif instan, gunakan tombol <strong>"Scan dari File / Galeri"</strong> di bawah untuk memproses gambar QR Code secara langsung.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div class="lg:col-span-5 bg-slate-900 p-4 rounded-2xl shadow-lg border border-slate-800 flex flex-col items-center">
+                    <div class="w-full max-w-[420px] mx-auto aspect-square bg-black rounded-xl overflow-hidden relative border-2 border-slate-700 scanner-glow" id="scannerContainer">
+                        <div id="qrReader" class="w-full h-full"></div>
+                        <div class="scan-line absolute left-0 right-0 pointer-events-none"></div>
+                        <button onclick="toggleCamera()" class="absolute bottom-4 right-4 w-10 h-10 bg-slate-800/85 backdrop-blur text-white rounded-full flex items-center justify-center hover:bg-slate-700 transition z-10" title="Ganti Kamera">
+                            <i data-lucide="switch-camera" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="w-full max-w-[420px] flex flex-col space-y-2 mt-4">
+                        <div class="flex space-x-2">
+                            <button onclick="startScanner()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-lg transition flex items-center justify-center"><i data-lucide="play" class="w-3.5 h-3.5 mr-1.5"></i> Hidupkan</button>
+                            <button onclick="stopScannerSafe()" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-2.5 rounded-lg transition flex items-center justify-center"><i data-lucide="square" class="w-3.5 h-3.5 mr-1.5"></i> Matikan</button>
+                        </div>
+                        
+                        <button onclick="triggerFileScan()" class="w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold py-2.5 rounded-lg transition flex items-center justify-center border border-slate-700">
+                            <i data-lucide="image" class="w-4 h-4 mr-1.5 text-emerald-400"></i> Scan dari File / Galeri (Solusi iOS)
+                        </button>
+                        <input type="file" id="qrFileInput" accept="image/*" class="hidden" onchange="handleQrFileScan(event)">
+                    </div>
+                    <div id="scannerNotification" class="mt-3 text-center text-xs text-emerald-400 font-semibold h-4"></div>
+                </div>
+
+                <div class="lg:col-span-7 bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                    <h3 class="font-bold text-sm tracking-wide text-slate-700 flex items-center"><i data-lucide="history" class="w-4 h-4 mr-2 text-emerald-500"></i> LOG SCAN TERAKHIR SINOPSIS</h3>
+                    <div id="scanResultBox" class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center space-x-4 hidden">
+                        <div id="scanResPhotoContainer" class="w-12 h-12 rounded-full overflow-hidden border border-slate-300 bg-slate-200 flex items-center justify-center text-slate-400"></div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-sm text-slate-900" id="scanResNama">Nama Peserta</h4>
+                            <p class="text-xs text-slate-500" id="scanResUtusan">Asal PAC</p>
+                            <span class="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded text-white" id="scanResBadge">Tepat Waktu</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto table-container">
+                        <table class="w-full text-left text-xs min-w-[500px]">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-600 uppercase font-bold border-b border-slate-200">
+                                    <th class="p-2.5">Peserta</th>
+                                    <th class="p-2.5">Materi</th>
+                                    <th class="p-2.5">Sesi</th>
+                                    <th class="p-2.5">Waktu</th>
+                                    <th class="p-2.5">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listScanLog" class="divide-y divide-slate-100">
+                                <tr><td colspan="5" class="p-3 text-center text-slate-400">Belum ada aktivitas pemindaian.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= VIEW: KELOLA SESI ================= -->
+        <section id="view-sesi" class="view-content hidden space-y-6 fade-in">
+            <div class="border-b border-slate-200 pb-4">
+                <h2 class="text-2xl font-extrabold tracking-tight text-slate-900 uppercase">Manajemen Sesi & Materi</h2>
+                <p class="text-xs font-semibold text-slate-500 mt-0.5">Konfigurasikan jenis kaderisasi dan tajuk materi yang sedang diujikan aktif.</p>
+            </div>
+            <div class="max-w-xl bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <form id="formSesi" onsubmit="handleUpdateSesi(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jenis Kaderisasi</label>
+                        <select id="sesiJenis" class="w-full p-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="PKD">Pelatihan Kepemimpinan Dasar (PKD)</option>
+                            <option value="DIKLATSAR">Pendidikan dan Latihan Dasar (DIKLATSAR)</option>
+                            <option value="PKL">Pelatihan Kepemimpinan Lanjutan (PKL)</option>
+                            <option value="SUSBALAN">Kursus Banser Lanjutan (SUSBALAN)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Judul / Tajuk Materi Sesi</label>
+                        <input type="text" id="sesiMateri" required class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Contoh: Ke-NU-an / Amaliyah Aswaja">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Instruktur / Pemateri</label>
+                        <input type="text" id="sesiInstruktur" required class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Nama Kiai / Sahabat Instruktur">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Sesi Ke- (1 s/d 20)</label>
+                            <input type="number" id="sesiKe" min="1" max="20" required class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Waktu Mulai (Jam)</label>
+                            <input type="time" id="sesiWaktu" required class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Durasi Maksimal Telat (Menit)</label>
+                            <input type="number" id="sesiDurasiTelat" min="1" max="180" required class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Contoh: 15">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Batas Izin Istirahat (Menit)</label>
+                            <input type="number" id="sesiRestLimit" min="1" max="120" required class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Contoh: 15">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-lg text-xs tracking-wider uppercase transition shadow-md">Update Sesi & Buka Monitor</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= VIEW: DATA PESERTA ================= -->
+        <section id="view-peserta" class="view-content hidden space-y-6 fade-in">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4">
+                <div>
+                    <h2 class="text-2xl font-extrabold tracking-tight text-slate-900 uppercase">Database Anggota Peserta</h2>
+                    <p class="text-xs font-semibold text-slate-500 mt-0.5">Kelola data pendaftaran berkas kaderisasi secara tertata.</p>
+                </div>
+                <button onclick="openModalPeserta()" class="mt-3 sm:mt-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg uppercase tracking-wider shadow flex items-center justify-center"><i data-lucide="user-plus" class="w-4 h-4 mr-1.5"></i> Tambah Peserta</button>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden table-container">
+                <table class="w-full text-left text-xs min-w-[700px]">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 font-bold uppercase border-b border-slate-200">
+                            <th class="p-3">ID / Card</th>
+                            <th class="p-3">Nama Lengkap</th>
+                            <th class="p-3">Utusan / Delegasi</th>
+                            <th class="p-3">No. HP</th>
+                            <th class="p-3 text-center">Aksi Operasional</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblPesertaBody" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= VIEW: LAPORAN REKAPITULASI ================= -->
+        <section id="view-rekap" class="view-content hidden space-y-6 fade-in">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4 no-print">
+                <div>
+                    <h2 class="text-2xl font-extrabold tracking-tight text-slate-900 uppercase">Laporan Rekapitulasi Kehadiran</h2>
+                    <p class="text-xs font-semibold text-slate-500 mt-0.5">Arsip data master presensi berkelanjutan (Sesi 1 s/d 20).</p>
+                </div>
+                <div class="mt-3 sm:mt-0 flex space-x-2">
+                    <button onclick="printRekap()" class="bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-2 rounded-lg border border-slate-200 shadow-sm flex items-center"><i data-lucide="printer" class="w-4 h-4 mr-1.5"></i> Cetak Laporan</button>
+                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-2 rounded-lg shadow-sm flex items-center"><i data-lucide="download" class="w-4 h-4 mr-1.5"></i> Ekspor Excel</button>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 md:p-10 rounded-2xl border border-slate-200 shadow-sm max-w-4xl mx-auto space-y-6 relative" id="printArea">
+                <div class="flex items-center space-x-6 border-b-4 border-double border-slate-900 pb-4">
+                    <div id="rekapLogoBox" onclick="triggerLogoUpload()" class="w-20 h-20 bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center p-1 cursor-pointer hover:border-emerald-500 transition relative group" title="Klik untuk ganti logo resmi">
+                        <div id="rekapLogoRender" class="w-full h-full flex items-center justify-center"></div>
+                        <div class="absolute inset-0 bg-black/40 text-white text-[9px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-xl transition">UPLOAD LOGO</div>
+                    </div>
+                    <input type="file" id="inputLogoInRekap" accept="image/*" class="hidden" onchange="handleLogoUploadInRekap(event)">
+                    <div class="flex-1">
+                        <h3 class="text-lg md:text-xl font-black text-slate-950 leading-tight uppercase tracking-wide">REKAP PRESENSI KADERISASI</h3>
+                        <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wider" id="rekapTxtOrganisasi">PIMPINAN CABANG GERAKAN PEMUDA ANSOR</h4>
+                        <h5 class="text-base font-extrabold text-emerald-700 uppercase tracking-widest" id="rekapTxtCabang">KABUPATEN BOGOR</h5>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-150 text-xs text-slate-700">
+                    <div><span class="font-bold text-slate-500">Kaderisasi:</span> <span id="repJenis" class="font-bold text-slate-900">PKD</span></div>
+                    <div><span class="font-bold text-slate-500">Sesi Ke-:</span> <span id="repSesi" class="font-bold text-slate-900">1</span></div>
+                    <div><span class="font-bold text-slate-500">Materi Pokok:</span> <span id="repMateri" class="font-medium">Ke-Ansor-an & Kebanseran</span></div>
+                    <div><span class="font-bold text-slate-500">Instruktur:</span> <span id="repInstruktur" class="font-medium">Sahabat Ketua PC</span></div>
+                </div>
+
+                <div class="overflow-x-auto table-container">
+                    <table class="w-full text-left text-xs border-collapse min-w-[700px]">
+                        <thead>
+                            <tr class="bg-slate-900 text-white font-bold uppercase">
+                                <th class="p-2 border border-slate-700">Nama Peserta</th>
+                                <th class="p-2 border border-slate-700">Utusan Delegasi</th>
+                                <th class="p-2 border border-slate-700">Materi / Sesi</th>
+                                <th class="p-2 border border-slate-700">Waktu Absen</th>
+                                <th class="p-2 border border-slate-700 text-center">Status</th>
+                                <th class="p-2 border border-slate-700 text-center no-print">☕ Kontrol Istirahat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblRekapBody" class="divide-y divide-slate-200"></tbody>
+                    </table>
+                </div>
+
+                <div class="pt-8 flex justify-end text-xs">
+                    <div class="text-center w-48 space-y-12">
+                        <div>
+                            <p class="font-medium text-slate-600">Panitia Pelaksana,</p>
+                            <p class="font-bold text-slate-900 uppercase tracking-wider">KADERISASI</p>
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-950 underline decoration-slate-900 tracking-wide">____________________</p>
+                            <p class="text-[10px] font-semibold text-slate-500 uppercase">PC GP Ansor Bogor</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= VIEW: MANAJEMEN TIM ================= -->
+        <section id="view-tim" class="view-content hidden space-y-6 fade-in">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-4">
+                <div>
+                    <h2 class="text-2xl font-extrabold tracking-tight text-slate-900 uppercase">Manajemen Tim / Operator</h2>
+                    <p class="text-xs font-semibold text-slate-500 mt-0.5">Kelola hak akses akun operator lapangan pendamping.</p>
+                </div>
+                <button onclick="openModalTim()" class="mt-3 sm:mt-0 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2.5 rounded-lg uppercase tracking-wider shadow flex items-center justify-center"><i data-lucide="user-plus" class="w-4 h-4 mr-1.5"></i> Tambah Operator</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="boxTimContainer"></div>
+        </section>
+
+    </main>
+
+    <!-- ================= MODAL: FORM PESERTA ================= -->
+    <div id="modalPeserta" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-xl max-w-md w-full overflow-hidden border border-slate-200 animate-scale-in">
+            <div class="bg-slate-900 p-4 text-white flex items-center justify-between">
+                <h3 class="font-bold text-sm tracking-wide uppercase" id="modalPesertaTitle">Tambah Register Peserta</h3>
+                <button onclick="closeModals()" class="text-slate-400 hover:text-white transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="formPeserta" onsubmit="handleSavePeserta(event)" class="p-5 space-y-4">
+                <input type="hidden" id="p-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Lengkap Sesuai KTP</label>
+                    <input type="text" id="p-nama" required class="w-full p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Utusan / PAC / Ranting</label>
+                    <input type="text" id="p-utusan" required class="w-full p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Contoh: PAC Parungpanjang">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nomor Handphone (WhatsApp)</label>
+                    <input type="text" id="p-hp" required class="w-full p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="08XXXXXXXXXX">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Foto Formal Profil Peserta</label>
+                    <input type="file" id="p-foto-file" accept="image/*" onchange="handlePesertaPhotoUpload(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                    <input type="hidden" id="p-foto-data">
+                    <div id="p-foto-preview" class="w-16 h-16 rounded-md bg-slate-100 border border-slate-200 mt-2 hidden items-center justify-center overflow-hidden"><img src="" class="w-full h-full object-cover"></div>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModals()" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase transition hover:bg-slate-50">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold uppercase transition shadow">Simpan Anggota</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: KARTU IDENTITAS ID QR ================= -->
+    <div id="modalIdCard" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-xl max-w-xs w-full overflow-hidden border border-slate-200 p-5 space-y-4 text-center">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2 no-print">
+                <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">Kaderisasi Card ID</span>
+                <button onclick="closeModals()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div id="idCardRender" class="space-y-3 bg-gradient-to-b from-slate-50 to-white p-4 rounded-2xl border border-slate-200">
+                <div class="mx-auto w-16 h-16 bg-slate-200 rounded-full overflow-hidden mb-2 border border-slate-300 flex items-center justify-center text-slate-400" id="idCardFoto">
+                    <i data-lucide="user" class="w-8 h-8"></i>
+                </div>
+                <h4 class="font-bold text-sm text-slate-900 leading-tight" id="idCardNama">Nama Peserta</h4>
+                <p class="text-xs text-slate-500 font-semibold" id="idCardUtusan"> PAC Kabupaten Bogor</p>
+                <div class="mx-auto w-56 h-56 bg-white p-2 border border-slate-200 rounded-lg flex items-center justify-center shadow-inner" id="idCardQrSlot"></div>
+                <p class="text-[10px] font-mono text-slate-400" id="idCardCode">ANS-XXXXXX</p>
+            </div>
+            <div class="flex flex-col gap-2 no-print">
+                <button onclick="printIdCard()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-lg text-xs uppercase tracking-wider transition flex items-center justify-center">
+                    <i data-lucide="printer" class="w-4 h-4 mr-1.5"></i> Cetak ID Card
+                </button>
+                <button onclick="downloadIdCard()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg text-xs uppercase tracking-wider transition flex items-center justify-center">
+                    <i data-lucide="download" class="w-4 h-4 mr-1.5"></i> Unduh Gambar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: BRANDING CUSTOMIZATION ================= -->
+    <div id="modalBranding" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-xl max-w-md w-full overflow-hidden border border-slate-200 animate-scale-in">
+            <div class="bg-slate-900 p-4 text-white flex items-center justify-between">
+                <h3 class="font-bold text-sm tracking-wide uppercase flex items-center"><i data-lucide="palette" class="w-4 h-4 mr-2 text-emerald-400"></i> Kustomisasi Ekosistem</h3>
+                <button onclick="closeModals()" class="text-slate-400 hover:text-white transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="handleSaveBranding(event)" class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Aplikasi Web</label>
+                    <input type="text" id="brandAppName" required class="w-full p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tingkatan Struktur Organisasi</label>
+                    <input type="text" id="brandOrganisasi" required class="w-full p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="PIMPINAN CABANG">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Wilayah Teritorial Cabang</label>
+                    <input type="text" id="brandCabang" required class="w-full p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="KABUPATEN BOGOR">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Unggah Logo Resmi Baru (.PNG/.SVG)</label>
+                    <input type="file" id="brandLogoFile" accept="image/*" onchange="handleBrandLogoUpload(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                    <input type="hidden" id="brandLogoData">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Skema Palet Warna Tema</label>
+                    <div class="flex space-x-2 mt-1">
+                        <button type="button" onclick="setTheme('emerald', event)" class="w-8 h-8 rounded-full bg-emerald-600 border-2 border-transparent transition focus:outline-none" data-theme="emerald"></button>
+                        <button type="button" onclick="setTheme('blue', event)" class="w-8 h-8 rounded-full bg-blue-600 border-2 border-transparent transition focus:outline-none" data-theme="blue"></button>
+                        <button type="button" onclick="setTheme('amber', event)" class="w-8 h-8 rounded-full bg-amber-500 border-2 border-transparent transition focus:outline-none" data-theme="amber"></button>
+                        <button type="button" onclick="setTheme('slate', event)" class="w-8 h-8 rounded-full bg-slate-700 border-2 border-transparent transition focus:outline-none" data-theme="slate"></button>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModals()" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase transition hover:bg-slate-50">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold uppercase transition shadow">Terapkan Global</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: FORM TAMBAH OPERATOR TIM ================= -->
+    <div id="modalTim" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full overflow-hidden border border-slate-200 animate-scale-in">
+            <div class="bg-slate-900 p-4 text-white flex items-center justify-between">
+                <h3 class="font-bold text-sm tracking-wide uppercase">Register Akun Tim Operator</h3>
+                <button onclick="closeModals()" class="text-slate-400 hover:text-white transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="formTim" onsubmit="handleSaveTeam(event)" class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Petugas Lapangan</label>
+                    <input type="text" id="t-nama" required class="w-full p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Sahabat Lapangan">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username Unik</label>
+                    <input type="text" id="t-username" required class="w-full p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="operator_pac">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password Akses</label>
+                    <input type="password" id="t-password" required class="w-full p-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="••••••••">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Level Otoritas Akses</label>
+                    <select id="t-role" class="w-full p-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <option value="operator">Operator Pemindai Scan</option>
+                        <option value="admin">Administrator (Full Access)</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModals()" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-bold uppercase transition hover:bg-slate-50">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold uppercase transition shadow">Simpan Akun</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CUSTOM DIALOG -->
+    <div id="customDialogModal" class="fixed inset-0 bg-slate-900/65 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 hidden animate-fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-100 p-6 space-y-4">
+            <div class="flex items-start space-x-3.5">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" id="dialogIconBox"></div>
+                <div>
+                    <h3 class="font-bold text-sm text-slate-900 uppercase tracking-wide" id="dialogTitle">Konfirmasi</h3>
+                    <p class="text-xs text-slate-500 mt-1 leading-relaxed" id="dialogMessage">Apakah Anda yakin?</p>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button id="btnDialogCancel" class="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-xs font-bold uppercase transition">Batal</button>
+                <button id="btnDialogConfirm" class="px-4 py-2 bg-[#047857] hover:bg-[#065f46] text-white rounded-lg text-xs font-bold uppercase transition shadow cursor-pointer">Ya, Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOADING OVERLAY WITH SMOOTH PROGRESS BAR (LIMIT 30 DETIK) -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[999] hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center w-full max-w-sm mx-4 animate-scale-in">
+            <span id="loadingSpinner" class="w-10 h-10 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin mb-3"></span>
+            <p id="loadingText" class="text-sm font-bold text-slate-700 animate-pulse text-center">Memproses data...</p>
+            
+            <div id="loadingProgressContainer" class="w-full bg-slate-100 rounded-full h-2.5 mt-4 overflow-hidden hidden">
+                <div id="loadingProgressBar" class="bg-emerald-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p id="loadingTimerText" class="text-[10px] text-slate-400 mt-2 hidden font-semibold">Mengontak Cloud Server: <span id="loadingTimerVal">0</span>s / 30s</p>
+        </div>
+    </div>
+
+    <!-- CORE JAVASCRIPT -->
+    <script>
+        // =========================================================
+        // PENGATURAN KONEKSI CLOUD
+        // =========================================================
+        const IS_PREVIEW = false; 
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyj6iU1O_l0RwKWRuUDbBZaSHeMcKwSPspIGZPrfIWG514HsGAXvUO4t1IJYyQ9wEiwCA/exec";
+
+        let html5QrCode = null; 
+        let currentFacingMode = "environment";
+        let chartKehadiranInst = null;
+        let chartTrendInst = null;
+        
+        // Progress Bar Timers
+        let loadingTimerInterval = null;
+        let loadingStartTimestamp = null;
+        
+        // Leaflet Global Map Instances
+        let leafletMapInstance = null;
+        let leafletMarkersGroup = null;
+
+        // Data Geografis Koordinat PAC / Kecamatan Kabupaten Bogor (40 Kecamatan)
+        const BOGOR_KECAMATAN_COORDS = {
+            "cibinong": [-6.4816, 106.8524],
+            "babakan madang": [-6.5772, 106.8776],
+            "bojonggede": [-6.4950, 106.8000],
+            "caringin": [-6.7198, 106.8375],
+            "cariu": [-6.5200, 107.1300],
+            "ciampea": [-6.5714, 106.7022],
+            "ciawi": [-6.6667, 106.8667],
+            "cibungbulang": [-6.5890, 106.6620],
+            "cigombong": [-6.7410, 106.8120],
+            "cigudeg": [-6.5500, 106.5300],
+            "cijeruk": [-6.6950, 106.7800],
+            "cileungsi": [-6.4025, 106.9634],
+            "ciomas": [-6.6110, 106.7640],
+            "cisarua": [-6.7000, 106.9500],
+            "ciseeng": [-6.4350, 106.7180],
+            "citeureup": [-6.5350, 106.8900],
+            "dramaga": [-6.5920, 106.7320],
+            "gunung putri": [-6.3850, 106.9150],
+            "gunung sindur": [-6.3800, 106.6800],
+            "jasinga": [-6.4800, 106.4500],
+            "jonggol": [-6.4710, 107.0140],
+            "kemang": [-6.4900, 106.7500],
+            "klapanunggal": [-6.4550, 106.9550],
+            "leuwiliang": [-6.6200, 106.6100],
+            "leuwisadeng": [-6.6350, 106.5700],
+            "megamendung": [-6.6500, 106.9100],
+            "nanggung": [-6.6600, 106.5100],
+            "pamijahan": [-6.6900, 106.6500],
+            "parung": [-6.4350, 106.7320],
+            "parungpanjang": [-6.3500, 106.5700],
+            "ranca bungur": [-6.5250, 106.7200],
+            "rumpin": [-6.4250, 106.6300],
+            "sukajaya": [-6.6100, 106.4700],
+            "sukamakmur": [-6.6120, 107.0300],
+            "sukaraja": [-6.5600, 106.8250],
+            "tajurhalang": [-6.4750, 106.7450],
+            "tamansari": [-6.6500, 106.7650],
+            "tanjungsari": [-6.5450, 107.1850],
+            "tenjo": [-6.3450, 106.4700],
+            "tenjolaya": [-6.6300, 106.7100]
+        };
+
+        const defaultState = {
+            branding: {
+                appName: "PRESENSI-GP ANSOR PRO",
+                logo: `<svg class="w-12 h-12 text-emerald-600" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45" fill="#047857"/><path d="M50 15 L75 40 L60 40 L60 75 L40 75 L40 40 L25 40 Z" fill="#FBBF24"/><circle cx="50" cy="52" r="8" fill="#fff"/></svg>`,
+                themeColor: "emerald",
+                organisasi: "PIMPINAN CABANG GP ANSOR",
+                cabang: "KABUPATEN BOGOR"
+            },
+            currentView: "login",
+            currentUser: null,
+            sesiAktif: {
+                jenis: "PKD",
+                materi: "Literasi Didital & SIAPs",
+                instruktur: "Sahabat Septa Aji., S.Kom",
+                sesiKe: "1",
+                waktu: "08:00",
+                durasiTelat: 15,
+                restLimit: 15
+            },
+            stats: { total: 0, hadir: 0, tepat: 0, terlambat: 0 },
+            peserta: [],
+            presensi: [],
+            tim: [
+                { username: "admin", password: "adminansor2026", role: "admin", nama: "Admin Utama", access: ["dashboard", "scan", "sesi", "peserta", "rekap", "tim", "branding"] },
+                { username: "operator", password: "123", role: "operator", nama: "Operator Lapangan", access: ["dashboard", "scan"] }
+            ]
+        };
+
+        let appState;
+        try {
+            const savedState = localStorage.getItem('SI_ANSOR_STATE');
+            appState = savedState ? JSON.parse(savedState) : null;
+        } catch (e) {
+            console.warn("Penyimpanan lokal dibatasi.", e);
+        }
+
+        if (!appState) {
+            appState = JSON.parse(JSON.stringify(defaultState));
+        }
+
+        // Dioptimalkan untuk kompresi ekstrim (resolusi 100px dan kualitas JPEG 0.5) untuk mencegah overload Google Sheets
+        function compressImageBase64(base64Str, maxWidth, maxHeight, quality, callback) {
+            const img = new Image();
+            img.src = base64Str;
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Menggunakan JPEG untuk ukuran file minimal dan kompresi maksimal
+                const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                callback(compressedBase64);
+            };
+            img.onerror = function() {
+                callback(base64Str);
+            };
+        }
+
+        function formatWaktuRekap(dateString) {
+            if (!dateString) return "-";
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) {
+                    return dateString;
+                }
+                const dd = String(date.getDate()).padStart(2, '0');
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const yyyy = date.getFullYear();
+                const hh = String(date.getHours()).padStart(2, '0');
+                const min = String(date.getMinutes()).padStart(2, '0');
+                const ss = String(date.getSeconds()).padStart(2, '0');
+                return `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        function getKecamatanCoords(utusanStr) {
+            if (!utusanStr) return { name: "UMUM", coords: [-6.55, 106.8] };
+            const clean = utusanStr.toLowerCase()
+                .replace(/pac/g, '')
+                .replace(/ranting/g, '')
+                .replace(/desa/g, '')
+                .replace(/kecamatan/g, '')
+                .trim();
+            
+            for (const key in BOGOR_KECAMATAN_COORDS) {
+                if (clean.includes(key) || key.includes(clean)) {
+                    return { name: key.toUpperCase(), coords: BOGOR_KECAMATAN_COORDS[key] };
+                }
+            }
+            return { 
+                name: utusanStr.toUpperCase(), 
+                coords: [-6.55 + (Math.random() - 0.5) * 0.18, 106.8 + (Math.random() - 0.5) * 0.18] 
+            };
+        }
+
+        function ensureUserAccess(user) {
+            if (!user) return null;
+            if (!user.access) {
+                user.access = user.role === 'admin' ? 
+                    ["dashboard", "scan", "sesi", "peserta", "rekap", "tim", "branding"] : 
+                    ["dashboard", "scan"];
+            }
+            return user;
+        }
+
+        function saveState() {
+            try {
+                if (appState.currentUser) {
+                    appState.currentUser = ensureUserAccess(appState.currentUser);
+                }
+                localStorage.setItem('SI_ANSOR_STATE', JSON.stringify(appState));
+            } catch (e) {
+                console.warn("Penyimpanan offline gagal.", e);
+            }
+        }
+
+        function updateUILayoutForLoginState(isLoggedIn) {
+            const sidebar = document.getElementById('mainSidebar');
+            const topNavbar = document.getElementById('topNavbar');
+            const mobileNav = document.getElementById('mobileNav');
+            const desktopHamburger = document.getElementById('desktopHamburger');
+            
+            if (isLoggedIn) {
+                document.body.classList.add('md:pl-64');
+                if (sidebar) {
+                    sidebar.style.setProperty('display', 'flex', 'important');
+                    sidebar.classList.remove('hidden');
+                }
+                if (topNavbar) topNavbar.classList.remove('hidden');
+                if (mobileNav) mobileNav.classList.remove('hidden');
+                if (desktopHamburger && sidebar.classList.contains('sidebar-hidden')) {
+                    desktopHamburger.classList.remove('hidden');
+                }
+            } else {
+                document.body.classList.remove('md:pl-64');
+                if (sidebar) {
+                    sidebar.style.setProperty('display', 'none', 'important');
+                    sidebar.classList.add('hidden');
+                }
+                if (topNavbar) topNavbar.classList.add('hidden');
+                if (mobileNav) mobileNav.classList.add('hidden');
+                if (desktopHamburger) desktopHamburger.classList.add('hidden');
+            }
+        }
+
+        function handleCloudFetchError(err, operationName, fallbackBtn = null, btnOriginalHTML = "") {
+            hideLoading();
+            if (fallbackBtn && btnOriginalHTML) {
+                fallbackBtn.innerHTML = btnOriginalHTML;
+            }
+            
+            let errorMsg = `Gagal memproses '${operationName}': ${err.message || err}`;
+            if (GAS_URL.includes("YourActualScriptIdHere") || GAS_URL.includes("URL_DEPLOY_GAS_ANDA_DISINI")) {
+                errorMsg = `Aplikasi gagal menghubungi database cloud karena tautan Google Apps Script (**GAS_URL**) belum Anda konfigurasikan!\n\n**Solusi Perbaikan:**\n1. Atur **'const IS_PREVIEW = true;'** di kode index.html untuk menguji aplikasi secara offline tanpa Google Sheets.\n2. Atau deploy Google Apps Script Anda dan tempelkan URL Web App asli Anda ke dalam variabel **'GAS_URL'**.`;
+            } else {
+                errorMsg = `Gagal terhubung ke Google Sheets Cloud!\n\n**Silakan periksa langkah berikut:**\n1. Pastikan Anda telah melakukan Deploy Apps Script sebagai **'Penerapan Baru' (New Deployment)**.\n2. Pastikan izin akses disetel ke **'Siapa Saja' (Anyone)**.\n3. Pastikan tautan Web App Anda berakhiran **'/exec'**.\n4. Periksa apakah browser Anda memblokir koneksi pihak ketiga.`;
+            }
+            showCustomAlert("Hubungan Cloud Gagal", errorMsg, "error");
+            lucide.createIcons();
+        }
+
+        function showCustomAlert(title, message, type = "info") {
+            const modal = document.getElementById('customDialogModal');
+            const titleEl = document.getElementById('dialogTitle');
+            const msgEl = document.getElementById('dialogMessage');
+            const btnCancel = document.getElementById('btnDialogCancel');
+            const btnConfirm = document.getElementById('btnDialogConfirm');
+            const iconBox = document.getElementById('dialogIconBox');
+            
+            titleEl.innerHTML = title;
+            msgEl.innerHTML = message;
+            btnCancel.classList.add('hidden');
+            
+            if (type === "success") {
+                iconBox.className = "w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-emerald-50 text-emerald-600";
+                iconBox.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i>`;
+                btnConfirm.className = "px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold uppercase transition shadow cursor-pointer";
+            } else if (type === "error") {
+                iconBox.className = "w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-rose-50 text-rose-600";
+                iconBox.innerHTML = `<i data-lucide="alert-triangle" class="w-5 h-5"></i>`;
+                btnConfirm.className = "px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold uppercase transition shadow cursor-pointer";
+            } else if (type === "warning") {
+                iconBox.className = "w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-amber-50 text-amber-600";
+                iconBox.innerHTML = `<i data-lucide="alert-triangle" class="w-5 h-5"></i>`;
+                btnConfirm.className = "px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-lg text-xs font-bold uppercase transition shadow cursor-pointer";
+            } else {
+                iconBox.className = "w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-blue-50 text-blue-600";
+                iconBox.innerHTML = `<i data-lucide="info" class="w-5 h-5"></i>`;
+                btnConfirm.className = "px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold uppercase transition shadow cursor-pointer";
+            }
+            
+            btnConfirm.innerText = "Selesai";
+            const newBtnConfirm = btnConfirm.cloneNode(true);
+            btnConfirm.parentNode.replaceChild(newBtnConfirm, btnConfirm);
+            newBtnConfirm.addEventListener('click', () => modal.classList.add('hidden'));
+            
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function showCustomConfirm(title, message, onConfirm, onCancel = null) {
+            const modal = document.getElementById('customDialogModal');
+            const titleEl = document.getElementById('dialogTitle');
+            const msgEl = document.getElementById('dialogMessage');
+            const btnCancel = document.getElementById('btnDialogCancel');
+            const btnConfirm = document.getElementById('btnDialogConfirm');
+            const iconBox = document.getElementById('dialogIconBox');
+            
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+            
+            iconBox.className = "w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-amber-50 text-amber-600";
+            iconBox.innerHTML = `<i data-lucide="help-circle" class="w-5 h-5"></i>`;
+            
+            btnCancel.classList.remove('hidden');
+            btnConfirm.className = "px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold uppercase transition shadow cursor-pointer";
+            btnConfirm.innerText = "Ya, Konfirmasi";
+            
+            const newBtnConfirm = btnConfirm.cloneNode(true);
+            const newBtnCancel = btnCancel.cloneNode(true);
+            btnConfirm.parentNode.replaceChild(newBtnConfirm, btnConfirm);
+            btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
+            
+            newBtnConfirm.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                if (onConfirm) onConfirm();
+            });
+            newBtnCancel.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                if (onCancel) onCancel();
+            });
+            
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initAppSync();
+            lucide.createIcons();
+            setTanggalHariIni();
+            
+            const sidebar = document.getElementById('mainSidebar');
+            if (sidebar) {
+                sidebar.addEventListener('mouseleave', () => {
+                    if (window.innerWidth >= 768) {
+                        toggleSidebar(false);
+                    }
+                });
+            }
+        });
+
+        function setTanggalHariIni() {
+            const opsi = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('txtHariIni').innerText = new Date().toLocaleDateString('id-ID', opsi);
+        }
+
+        function initAppSync() {
+            renderBrandingUI();
+            if (appState.currentUser) {
+                appState.currentUser = ensureUserAccess(appState.currentUser);
+                document.getElementById('view-login').classList.add('hidden');
+                updateUILayoutForLoginState(true);
+                initAppAfterLogin();
+                switchView(appState.currentView || 'dashboard');
+                toggleSidebar(false); 
+            } else {
+                document.getElementById('view-login').classList.remove('hidden');
+                updateUILayoutForLoginState(false);
+                switchView('login');
+            }
+        }
+
+        function toggleSidebar(show) {
+            if (!appState.currentUser) {
+                updateUILayoutForLoginState(false);
+                return;
+            }
+
+            const sidebar = document.getElementById('mainSidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            const desktopBtn = document.getElementById('desktopHamburger');
+            const body = document.body;
+
+            if (!sidebar) return;
+
+            if (show) {
+                sidebar.classList.remove('sidebar-hidden');
+                sidebar.classList.add('active'); 
+                if (window.innerWidth < 768) {
+                    if (backdrop) backdrop.classList.remove('hidden');
+                } else {
+                    body.classList.remove('body-expanded');
+                    body.classList.add('md:pl-64');
+                    if (desktopBtn) desktopBtn.classList.add('hidden');
+                }
+            } else {
+                sidebar.classList.remove('active'); 
+                if (backdrop) backdrop.classList.add('hidden');
+                if (window.innerWidth >= 768) {
+                    sidebar.classList.add('sidebar-hidden');
+                    body.classList.add('body-expanded');
+                    body.classList.remove('md:pl-64'); 
+                    if (desktopBtn) { 
+                        desktopBtn.classList.remove('hidden');
+                        desktopBtn.classList.add('md:block');
+                    }
+                }
+            }
+        }
+
+        function renderBrandingUI() {
+            const logoContainerIds = ['sidebarLogoContainer', 'loginLogoContainer', 'rekapLogoRender'];
+            logoContainerIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = appState.branding.logo;
+            });
+            document.getElementById('sidebarAppName').innerText = appState.branding.appName;
+            document.getElementById('loginAppName').innerText = appState.branding.appName;
+            document.getElementById('rekapTxtOrganisasi').innerText = appState.branding.organisasi + " GERAKAN PEMUDA ANSOR";
+            document.getElementById('rekapTxtCabang').innerText = appState.branding.cabang;
+        }
+
+        function buildNavigationUI() {
+            const navLinksContainer = document.getElementById('sidebarNavLinks');
+            const mobileNavContainer = document.getElementById('mobileNav');
+            const userAccess = (appState.currentUser && appState.currentUser.access) ? appState.currentUser.access : [];
+
+            const allLinks = [
+                { id: "dashboard", label: "Dashboard", icon: "layout-dashboard" },
+                { id: "scan", label: "Scan Presensi", icon: "qr-code" },
+                { id: "sesi", label: "Kelola Sesi", icon: "calendar" },
+                { id: "peserta", label: "Data Peserta", icon: "users" },
+                { id: "rekap", label: "Rekap Presensi", icon: "file-spreadsheet" },
+                { id: "tim", label: "Manajemen Tim", icon: "shield-check" }
+            ];
+
+            let desktopHTML = "";
+            allLinks.forEach(link => {
+                if (userAccess.includes(link.id)) {
+                    desktopHTML += `
+                        <button onclick="switchView('${link.id}')" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition duration-200 hover:bg-slate-800/70" data-view="${link.id}">
+                            <i data-lucide="${link.icon}" class="w-4 h-4"></i> <span>${link.label}</span>
+                        </button>
+                    `;
+                }
+            });
+            if (userAccess.includes("branding")) {
+                desktopHTML += `
+                    <button onclick="openBrandingModal()" class="nav-btn w-full flex items-center space-x-3 px-4 py-2.5 rounded-lg text-sm font-medium transition duration-200 hover:bg-slate-800/70 text-slate-400">
+                        <i data-lucide="palette" class="w-4 h-4"></i> <span>Kustomisasi</span>
+                    </button>
+                `;
+            }
+            navLinksContainer.innerHTML = desktopHTML;
+
+            let mobileHTML = "";
+            allLinks.forEach(link => {
+                if (userAccess.includes(link.id)) {
+                    mobileHTML += `
+                        <button onclick="switchView('${link.id}')" class="mobile-nav-btn flex flex-col items-center text-slate-400 p-1.5 rounded-lg" data-view="${link.id}">
+                            <i data-lucide="${link.icon}" class="w-5 h-5"></i><span class="text-[9px] mt-0.5">${link.label.split(' ')[0]}</span>
+                        </button>
+                    `;
+                }
+            });
+            mobileHTML += `
+                <button onclick="handleLogout()" class="mobile-nav-btn flex flex-col items-center text-amber-500 p-1.5 rounded-lg" title="Logout Sesi">
+                    <i data-lucide="log-out" class="w-5 h-5"></i><span class="text-[9px] mt-0.5 font-semibold">Keluar</span>
+                </button>
+            `;
+            mobileNavContainer.innerHTML = mobileHTML;
+            lucide.createIcons();
+        }
+
+        async function switchView(viewName) {
+            if (viewName === 'login') {
+                updateUILayoutForLoginState(false);
+                document.getElementById('view-login').classList.remove('hidden');
+                document.querySelectorAll('.view-content').forEach(section => section.classList.add('hidden'));
+                return;
+            }
+
+            appState.currentUser = ensureUserAccess(appState.currentUser);
+            const userAccess = (appState.currentUser && appState.currentUser.access) ? appState.currentUser.access : [];
+            if (appState.currentUser && !userAccess.includes(viewName)) {
+                showCustomAlert("Akses Ditolak", "Anda tidak memiliki kewenangan membuka halaman ini.", "error");
+                return;
+            }
+
+            appState.currentView = viewName;
+            document.querySelectorAll('.view-content').forEach(section => section.classList.add('hidden'));
+            document.getElementById('view-login').classList.add('hidden');
+            
+            updateUILayoutForLoginState(true);
+
+            const targetView = document.getElementById(`view-${viewName}`);
+            if (targetView) targetView.classList.remove('hidden');
+
+            await stopScannerSafe();
+
+            if (viewName === 'dashboard') {
+                renderDashboardView();
+                setTimeout(() => {
+                    initGeographicMap();
+                }, 300);
+            }
+            if (viewName === 'peserta') renderPesertaView();
+            if (viewName === 'rekap') renderRekapView();
+            if (viewName === 'tim') renderTimView();
+            
+            lucide.createIcons();
+            toggleSidebar(false);
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginUsername').value.trim();
+            const p = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('btnLoginSubmit');
+            
+            btn.innerHTML = `<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> <span>AUTENTIKASI...</span>`;
+
+            if (IS_PREVIEW) {
+                setTimeout(() => {
+                    const foundUser = appState.tim.find(user => user.username === u && user.password === p);
+                    if (foundUser) {
+                        appState.currentUser = ensureUserAccess({ 
+                            username: foundUser.username, 
+                            role: foundUser.role, 
+                            nama: foundUser.nama
+                        });
+                        saveState();
+                        document.getElementById('view-login').classList.add('hidden');
+                        updateUILayoutForLoginState(true);
+                        initAppAfterLogin();
+                        switchView('dashboard');
+                    } else {
+                        showCustomAlert("Akses Ditolak", "Kredensial login tidak terdaftar di sistem lokal.", "error");
+                        btn.innerHTML = `<span>MASUK SISTEM</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+                        lucide.createIcons();
+                    }
+                }, 600);
+            } else {
+                showLoading("Menghubungkan ke Cloud Database...");
+                fetch(GAS_URL + "?action=login&username=" + encodeURIComponent(u) + "&password=" + encodeURIComponent(p))
+                    .then(res => res.json())
+                    .then(data => {
+                        hideLoading();
+                        if (data.status === "success") {
+                            appState.currentUser = ensureUserAccess(data.user);
+                            appState.peserta = data.peserta || [];
+                            appState.presensi = data.presensi || [];
+                            appState.tim = data.tim || [];
+                            appState.branding = data.branding || appState.branding;
+                            appState.sesiAktif = data.sesiAktif || appState.sesiAktif;
+                            appState.stats = data.stats || appState.stats;
+                            saveState();
+                            
+                            document.getElementById('view-login').classList.add('hidden');
+                            updateUILayoutForLoginState(true);
+                            initAppAfterLogin();
+                            renderBrandingUI();
+                            switchView('dashboard');
+                        } else {
+                            showCustomAlert("Akses Gagal", data.message || "Gagal masuk ke sistem.", "error");
+                            btn.innerHTML = `<span>MASUK SISTEM</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+                            lucide.createIcons();
+                        }
+                    }).catch(err => {
+                        handleCloudFetchError(err, "Autentikasi Masuk Sistem", btn, `<span>MASUK SISTEM</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>`);
+                    });
+            }
+        }
+
+        function initAppAfterLogin() {
+            document.getElementById('profileName').innerText = appState.currentUser.nama;
+            document.getElementById('profileRole').innerText = appState.currentUser.role + " ACCESS";
+            document.getElementById('avatarUser').innerText = appState.currentUser.nama.charAt(0);
+            buildNavigationUI();
+        }
+
+        function handleLogout() {
+            showCustomConfirm("Konfirmasi Keluar", "Apakah Anda yakin ingin keluar dari sistem presensi?", () => {
+                appState.currentUser = null;
+                saveState(); 
+                window.location.reload(); 
+            });
+        }
+
+        function handleResetLocalState() {
+            showCustomConfirm(
+                "Konfirmasi Reset Lokal",
+                "Apakah Sahabat yakin ingin mengosongkan seluruh data lokal (Peserta, Presensi, Sesi) di browser ini? Tindakan ini akan mengosongkan tampilan aplikasi Anda dari awal. Tenang, data di Google Sheets Cloud Anda AMAN dan tidak akan terhapus.",
+                () => {
+                    try {
+                        localStorage.removeItem('SI_ANSOR_STATE');
+                        appState = JSON.parse(JSON.stringify(defaultState));
+                        saveState();
+                        showCustomAlert("Reset Berhasil", "Seluruh database memori lokal browser telah dibersihkan. Aplikasi akan dimuat ulang.", "success");
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1200);
+                    } catch (e) {
+                        showCustomAlert("Gagal Reset", "Gagal mereset cache browser Anda: " + e.message, "error");
+                    }
+                }
+            );
+        }
+
+        function renderDashboardView() {
+            document.getElementById('dashJenisKaderisasi').innerText = appState.sesiAktif.jenis;
+            document.getElementById('dashNamaMateri').innerText = appState.sesiAktif.materi;
+            document.getElementById('dashInstruktur').innerText = "Instruktur: " + appState.sesiAktif.instruktur;
+            document.getElementById('dashSesiKe').innerText = "Sesi Pertemuan Ke-" + appState.sesiAktif.sesiKe;
+            document.getElementById('dashWaktuMulai').innerText = "Mulai Jam: " + appState.sesiAktif.waktu + " WIB";
+            document.getElementById('dashRestLimit').innerText = "Batas Izin Istirahat: " + (appState.sesiAktif.restLimit || 15) + " Menit";
+
+            document.getElementById('statTotal').innerText = appState.stats.total;
+            document.getElementById('statHadir').innerText = appState.stats.hadir;
+            document.getElementById('statTepat').innerText = appState.stats.tepat;
+            document.getElementById('statTerlambat').innerText = appState.stats.terlambat;
+
+            let persen = appState.stats.total > 0 ? Math.round((appState.stats.hadir / appState.stats.total) * 100) : 0;
+            document.getElementById('dashPersenHadir').innerText = persen + "%";
+            document.getElementById('dashRatioHadir').innerText = `${appState.stats.hadir} dari ${appState.stats.total} Kuota`;
+
+            initDashboardCharts();
+        }
+
+        function initGeographicMap() {
+            const mapContainer = document.getElementById('geoDistributionMap');
+            if (!mapContainer) return;
+
+            if (leafletMapInstance) {
+                setTimeout(() => {
+                    leafletMapInstance.invalidateSize();
+                    renderMapMarkers();
+                }, 100);
+                return;
+            }
+
+            leafletMapInstance = L.map('geoDistributionMap', {
+                center: [-6.55, 106.82],
+                zoom: 10,
+                scrollWheelZoom: false,
+                attributionControl: false
+            });
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                maxZoom: 18
+            }).addTo(leafletMapInstance);
+
+            leafletMarkersGroup = L.layerGroup().addTo(leafletMapInstance);
+
+            setTimeout(() => {
+                leafletMapInstance.invalidateSize();
+                renderMapMarkers();
+            }, 200);
+        }
+
+        function renderMapMarkers() {
+            if (!leafletMarkersGroup) return;
+            leafletMarkersGroup.clearLayers();
+
+            const activeSesi = String(appState.sesiAktif.sesiKe);
+            const pacData = {};
+
+            appState.presensi.forEach(p => {
+                if (String(p.sesi) === activeSesi) {
+                    const pacName = p.utusan || "Umum";
+                    pacData[pacName] = (pacData[pacName] || 0) + 1;
+                }
+            });
+
+            const keys = Object.keys(pacData);
+            if (keys.length === 0) {
+                const defaultMarker = L.circleMarker([-6.5971, 106.7973], {
+                    radius: 8,
+                    fillColor: '#64748b',
+                    color: '#475569',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.6
+                }).addTo(leafletMarkersGroup);
+                
+                defaultMarker.bindTooltip("<div class='font-bold text-xs p-1'>PC GP Ansor Kabupaten Bogor (Belum Ada Data)</div>");
+                return;
+            }
+
+            const points = [];
+            keys.forEach(pac => {
+                const count = pacData[pac];
+                const info = getKecamatanCoords(pac);
+                points.push(info.coords);
+
+                const radiusSize = Math.min(10 + (count * 2.5), 28);
+
+                const marker = L.circleMarker(info.coords, {
+                    radius: radiusSize,
+                    fillColor: '#10b981',
+                    color: '#047857',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.7
+                }).addTo(leafletMarkersGroup);
+
+                marker.bindTooltip(`
+                    <div class="p-1 font-sans">
+                        <p class="font-extrabold text-[11px] text-slate-900 uppercase border-b border-slate-100 pb-0.5 mb-1">${info.name}</p>
+                        <p class="text-[10px] text-emerald-800 font-bold">Hadir: ${count} Kader</p>
+                        <p class="text-[9px] text-slate-400 mt-0.5">Sesi ${appState.sesiAktif.sesiKe}: ${appState.sesiAktif.materi}</p>
+                    </div>
+                `, { direction: 'top', sticky: true });
+            });
+
+            if (points.length > 0 && leafletMapInstance) {
+                try {
+                    leafletMapInstance.fitBounds(L.latLngBounds(points), { padding: [40, 40] });
+                } catch(e) {}
+            }
+        }
+
+        function initDashboardCharts() {
+            const optionsBar = {
+                series: [{ name: 'Jumlah Peserta', data: [appState.stats.hadir, appState.stats.tepat, appState.stats.terlambat] }],
+                chart: { type: 'bar', height: 230, toolbar: { show: false } },
+                plotOptions: { bar: { borderRadius: 6, horizontal: false, columnWidth: '50%', distributed: true } },
+                colors: ['#059669', '#10b981', '#f59e0b'],
+                dataLabels: { enabled: false },
+                xaxis: {
+                    categories: ['Total Hadir', 'Tepat Waktu', 'Terlambat'],
+                    labels: { style: { colors: '#64748b', fontSize: '11px', fontWeight: 600 } }
+                },
+                legend: { show: false }
+            };
+
+            if (chartKehadiranInst) chartKehadiranInst.destroy();
+            chartKehadiranInst = new ApexCharts(document.querySelector("#chartKehadiran"), optionsBar);
+            chartKehadiranInst.render();
+
+            const sessionCounts = {};
+            const maxSesi = Math.max(5, parseInt(appState.sesiAktif.sesiKe || 1));
+            for (let i = 1; i <= maxSesi; i++) {
+                sessionCounts[i] = 0;
+            }
+            appState.presensi.forEach(p => {
+                if (p.sesi) {
+                    sessionCounts[p.sesi] = (sessionCounts[p.sesi] || 0) + 1;
+                }
+            });
+
+            const trendCategories = Object.keys(sessionCounts).map(k => `Sesi ${k}`);
+            const trendData = Object.values(sessionCounts);
+
+            const optionsTrend = {
+                series: [{ name: 'Kader Hadir', data: trendData }],
+                chart: { type: 'area', height: 230, toolbar: { show: false }, zoom: { enabled: false } },
+                dataLabels: { enabled: true, style: { fontSize: '10px', colors: ['#047857'] } },
+                stroke: { curve: 'smooth', width: 3, colors: ['#047857'] },
+                fill: {
+                    type: 'gradient',
+                    gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [0, 90, 100], colorStops: [] }
+                },
+                colors: ['#10b981'],
+                xaxis: {
+                    categories: trendCategories,
+                    labels: { style: { colors: '#64748b', fontSize: '10px', fontWeight: 500 } }
+                },
+                yaxis: {
+                    min: 0,
+                    labels: { style: { colors: '#64748b', fontSize: '10px' } }
+                }
+            };
+
+            if (chartTrendInst) chartTrendInst.destroy();
+            chartTrendInst = new ApexCharts(document.querySelector("#chartTrend"), optionsTrend);
+            chartTrendInst.render();
+        }
+
+        function renderPesertaView() {
+            const tbody = document.getElementById('tblPesertaBody');
+            tbody.innerHTML = '';
+            if (appState.peserta.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Database Anggota Kosong. Klik Tambah Peserta.</td></tr>`;
+                return;
+            }
+            appState.peserta.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition text-slate-700";
+                tr.innerHTML = `
+                    <td class="p-3 font-mono font-bold text-emerald-700">${p.id}</td>
+                    <td class="p-3 font-semibold text-slate-900 flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+                            ${p.foto ? `<img src="${p.foto}" class="w-full h-full object-cover">` : `<i data-lucide="user" class="w-4 h-4"></i>`}
+                        </div>
+                        <span class="truncate max-w-[150px] md:max-w-[200px]">${p.nama}</span>
+                    </td>
+                    <td class="p-3">${p.utusan}</td>
+                    <td class="p-3">${p.hp}</td>
+                    <td class="p-3 text-center flex justify-center space-x-1.5">
+                        <button onclick="openIdCard('${p.id}')" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition" title="Cetak ID QR"><i data-lucide="qr-code" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="editPeserta('${p.id}')" class="p-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 rounded transition" title="Edit Profil"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="handleDeletePeserta('${p.id}')" class="p-1.5 bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 rounded transition" title="Hapus Anggota"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function renderRekapView() {
+            document.getElementById('repJenis').innerText = appState.sesiAktif.jenis;
+            document.getElementById('repSesi').innerText = appState.sesiAktif.sesiKe;
+            document.getElementById('repMateri').innerText = appState.sesiAktif.materi;
+            document.getElementById('repInstruktur').innerText = appState.sesiAktif.instruktur;
+
+            const tbody = document.getElementById('tblRekapBody');
+            tbody.innerHTML = '';
+            if (appState.presensi.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada rekaman riwayat presensi masuk.</td></tr>`;
+                return;
+            }
+            
+            appState.presensi.forEach(row => {
+                const badgeColor = row.status === "Tepat Waktu" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800";
+                let breakActionBtn = '';
+                let breakStatusLabel = '';
+                
+                if (!row.breakStart) {
+                    breakActionBtn = `<button onclick="toggleBreak('${row.id}')" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg font-bold text-[10px] transition flex items-center gap-1 mx-auto no-print"><i data-lucide="coffee" class="w-3.5 h-3.5"></i> Mulai Izin</button>`;
+                    breakStatusLabel = `<span class="text-slate-400 font-medium text-[10px]">Aktif Sesi</span>`;
+                } else if (row.breakStart && !row.breakEnd) {
+                    breakActionBtn = `<button onclick="toggleBreak('${row.id}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg font-bold text-[10px] transition flex items-center gap-1 mx-auto no-print"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Kembali</button>`;
+                    breakStatusLabel = `<span class="text-blue-600 font-bold text-[10px] animate-pulse">☕ Istirahat (${row.breakStartStr})</span>`;
+                } else {
+                    const isOver = row.breakStatus.includes("Terlambat");
+                    const labelColor = isOver ? "text-rose-600 bg-rose-50 border-rose-200" : "text-emerald-700 bg-emerald-50 border-emerald-200";
+                    breakActionBtn = `<button onclick="toggleBreak('${row.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold text-[10px] transition flex items-center gap-1 mx-auto no-print"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Reset</button>`;
+                    breakStatusLabel = `<span class="px-2 py-0.5 rounded-full border text-[9px] font-bold ${labelColor}">${row.breakStatus}</span>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition text-slate-700";
+                tr.innerHTML = `
+                    <td class="p-2.5 border border-slate-200 font-bold text-slate-900">${row.nama}</td>
+                    <td class="p-2.5 border border-slate-200">${row.utusan}</td>
+                    <td class="p-2.5 border border-slate-200"><span class="font-semibold text-slate-700">[Sesi ${row.sesi}]</span> ${row.materi}</td>
+                    <td class="p-2.5 border border-slate-200 font-mono text-slate-600 font-medium">${formatWaktuRekap(row.waktu)}</td>
+                    <td class="p-2.5 border border-slate-200 text-center">
+                        <div class="flex flex-col items-center justify-center space-y-1">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeColor}">${row.status}</span>
+                            <div class="mt-0.5">${breakStatusLabel}</div>
+                        </div>
+                    </td>
+                    <td class="p-2.5 border border-slate-200 text-center no-print">${breakActionBtn}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function toggleBreak(participantId) {
+            const record = appState.presensi.find(x => x.id === participantId && String(x.sesi) === String(appState.sesiAktif.sesiKe));
+            if (!record) {
+                showCustomAlert("Gagal Izin", "Peserta belum melakukan presensi masuk di sesi ini!", "warning");
+                return;
+            }
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + " WIB";
+
+            if (!record.breakStart) {
+                record.breakStart = now.toISOString();
+                record.breakStartStr = timeStr;
+                record.breakStatus = "Istirahat";
+                saveState();
+                renderRekapView();
+                if(!IS_PREVIEW) syncStateWithCloud();
+            } else if (record.breakStart && !record.breakEnd) {
+                record.breakEnd = now.toISOString();
+                record.breakEndStr = timeStr;
+                
+                const start = new Date(record.breakStart);
+                const diffMs = now - start;
+                const diffMins = Math.round(diffMs / 1000 / 60);
+                const limit = parseInt(appState.sesiAktif.restLimit || 15);
+                
+                if (diffMins > limit) {
+                    record.breakStatus = `Terlambat Kembali (${diffMins} mnt)`;
+                } else {
+                    record.breakStatus = `Kembali Tepat Waktu (${diffMins} mnt)`;
+                }
+                saveState();
+                renderRekapView();
+                if(!IS_PREVIEW) syncStateWithCloud();
+            } else {
+                showCustomConfirm("Reset Istirahat", `Reset status izin istirahat untuk Sahabat ${record.nama}?`, () => {
+                    delete record.breakStart;
+                    delete record.breakStartStr;
+                    delete record.breakEnd;
+                    delete record.breakEndStr;
+                    delete record.breakStatus;
+                    saveState();
+                    renderRekapView();
+                    if(!IS_PREVIEW) syncStateWithCloud();
+                });
+            }
+        }
+
+        function renderTimView() {
+            const container = document.getElementById('boxTimContainer');
+            container.innerHTML = '';
+            appState.tim.forEach(t => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between animate-fade-in";
+                card.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-700"><i data-lucide="user-check" class="w-5 h-5"></i></div>
+                        <div>
+                            <h4 class="font-bold text-sm text-slate-900">${t.nama}</h4>
+                            <p class="text-xs text-slate-400 font-mono">@${t.username} • <span class="capitalize text-emerald-600 font-bold">${t.role}</span></p>
+                        </div>
+                    </div>
+                    ${t.username !== 'admin' ? `<button onclick="handleDeleteTeam('${t.username}')" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition"><i data-lucide="trash" class="w-4 h-4"></i></button>` : ''}
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function openModalPeserta() {
+            document.getElementById('formPeserta').reset();
+            document.getElementById('p-id').value = '';
+            document.getElementById('p-foto-data').value = '';
+            document.getElementById('p-foto-preview').classList.add('hidden');
+            document.getElementById('modalPesertaTitle').innerText = "Tambah Register Peserta";
+            document.getElementById('modalPeserta').classList.remove('hidden');
+        }
+
+        function closeModals() {
+            document.getElementById('modalPeserta').classList.add('hidden');
+            document.getElementById('modalIdCard').classList.add('hidden');
+            document.getElementById('modalBranding').classList.add('hidden');
+            document.getElementById('modalTim').classList.add('hidden');
+        }
+
+        // Kompresi ekstrim foto profil ke resolusi max 100px dan kualitas JPEG 0.5 (Sangat kecil / ultra-lightweight)
+        function handlePesertaPhotoUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const r = new FileReader();
+            r.onload = function(evt) {
+                const uncompressedBase64 = evt.target.result;
+                // Kompresi max 100x100 dengan kualitas 0.5 untuk efisiensi sinkronisasi Sheets
+                compressImageBase64(uncompressedBase64, 100, 100, 0.5, function(compressedBase64) {
+                    document.getElementById('p-foto-data').value = compressedBase64;
+                    const pBox = document.getElementById('p-foto-preview');
+                    pBox.querySelector('img').src = compressedBase64;
+                    pBox.classList.remove('hidden');
+                    pBox.classList.add('flex');
+                });
+            };
+            r.readAsDataURL(file);
+        }
+
+        function handleSavePeserta(e) {
+            e.preventDefault();
+            const id = document.getElementById('p-id').value;
+            const pData = {
+                id: id || "ANS-" + Math.floor(100000 + Math.random() * 900000),
+                nama: document.getElementById('p-nama').value.trim(),
+                utusan: document.getElementById('p-utusan').value.trim(),
+                hp: document.getElementById('p-hp').value.trim(),
+                foto: document.getElementById('p-foto-data').value
+            };
+
+            if (IS_PREVIEW) {
+                if (id) {
+                    const idx = appState.peserta.findIndex(x => x.id === id);
+                    if (idx !== -1) appState.peserta[idx] = pData;
+                } else {
+                    appState.peserta.unshift(pData);
+                    appState.stats.total += 1;
+                }
+                saveState();
+                closeModals();
+                renderPesertaView();
+            } else {
+                showLoading("Menyimpan Berkas Anggota ke Cloud...");
+                fetch(GAS_URL + "?action=savePeserta", {
+                    method: 'POST',
+                    body: JSON.stringify({ user: appState.currentUser.username, peserta: pData })
+                }).then(res => res.json())
+                .then(data => {
+                    hideLoading();
+                    if(data.status === "success") {
+                        appState.peserta = data.peserta;
+                        appState.stats.total = data.peserta.length;
+                        saveState();
+                        closeModals();
+                        renderPesertaView();
+                    } else { showCustomAlert("Gagal Menyimpan", data.message, "error"); }
+                }).catch(err => { 
+                    handleCloudFetchError(err, "Simpan Berkas Anggota");
+                });
+            }
+        }
+
+        function editPeserta(id) {
+            const p = appState.peserta.find(x => x.id === id);
+            if (!p) return;
+            document.getElementById('p-id').value = p.id;
+            document.getElementById('p-nama').value = p.nama;
+            document.getElementById('p-utusan').value = p.utusan;
+            document.getElementById('p-hp').value = p.hp;
+            document.getElementById('p-foto-data').value = p.foto || '';
+            
+            if (p.foto) {
+                const pBox = document.getElementById('p-foto-preview');
+                pBox.querySelector('img').src = p.foto;
+                pBox.classList.remove('hidden');
+                pBox.classList.add('flex');
+            } else {
+                document.getElementById('p-foto-preview').classList.add('hidden');
+            }
+            document.getElementById('modalPesertaTitle').innerText = "Modifikasi Berkas Peserta";
+            document.getElementById('modalPeserta').classList.remove('hidden');
+        }
+
+        function handleDeletePeserta(id) {
+            showCustomConfirm("Hapus Peserta", "Hapus permanen peserta dengan ID " + id + "? Semua data presensinya akan terhapus.", () => {
+                if (IS_PREVIEW) {
+                    appState.peserta = appState.peserta.filter(x => x.id !== id);
+                    appState.presensi = appState.presensi.filter(x => x.id !== id);
+                    appState.stats.total = appState.peserta.length;
+                    appState.stats.hadir = appState.presensi.length;
+                    saveState();
+                    renderPesertaView();
+                } else {
+                    showLoading("Menghapus Data Berkas...");
+                    fetch(GAS_URL + "?action=deletePeserta&id=" + id + "&user=" + appState.currentUser.username)
+                        .then(res => res.json())
+                        .then(data => {
+                            hideLoading();
+                            if(data.status === "success") {
+                                appState.peserta = data.peserta;
+                                appState.presensi = data.presensi;
+                                appState.stats = data.stats;
+                                saveState();
+                                renderPesertaView();
+                            } else { showCustomAlert("Gagal Menghapus", data.message, "error"); }
+                        }).catch(err => { 
+                            handleCloudFetchError(err, "Hapus Berkas Anggota");
+                        });
+                }
+            });
+        }
+
+        function openIdCard(id) {
+            const p = appState.peserta.find(x => x.id === id);
+            if (!p) return;
+            document.getElementById('idCardNama').innerText = p.nama;
+            document.getElementById('idCardUtusan').innerText = p.utusan;
+            document.getElementById('idCardCode').innerText = p.id;
+            
+            const fotoSlot = document.getElementById('idCardFoto');
+            if(p.foto) {
+                fotoSlot.innerHTML = `<img src="${p.foto}" class="w-full h-full object-cover">`;
+            } else {
+                fotoSlot.innerHTML = `<i data-lucide="user" class="w-8 h-8"></i>`;
+                lucide.createIcons();
+            }
+
+            const qrSlot = document.getElementById('idCardQrSlot');
+            qrSlot.innerHTML = ''; 
+            new QRCode(qrSlot, {
+                text: p.id,
+                width: 224,
+                height: 224,
+                colorDark : "#0f172a",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+            document.getElementById('modalIdCard').classList.remove('hidden');
+        }
+
+        function downloadIdCard() {
+            const element = document.getElementById('idCardRender');
+            const nama = document.getElementById('idCardNama').innerText;
+            
+            html2canvas(element, { scale: 3, backgroundColor: "#ffffff" }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `ID_CARD_${nama.replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+
+        async function toggleCamera() {
+            currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+            const stateNotif = document.getElementById('scannerNotification');
+            if (stateNotif) {
+                stateNotif.innerText = "Mengalihkan ke Kamera " + (currentFacingMode === "user" ? "Depan..." : "Belakang...");
+            }
+
+            if (html5QrCode && html5QrCode.getState() === 2) {
+                await stopScannerSafe();
+                startScanner();
+            } else {
+                startScanner();
+            }
+        }
+
+        async function startScanner() {
+            if (html5QrCode && html5QrCode.getState() === 2) return;
+            const stateNotif = document.getElementById('scannerNotification');
+            if (stateNotif) {
+                stateNotif.innerText = "Menghubungi modul kamera...";
+            }
+
+            try {
+                const testStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: currentFacingMode } 
+                });
+                testStream.getTracks().forEach(track => track.stop());
+            } catch (err) {
+                console.error("Izin native iOS ditolak:", err);
+                if (stateNotif) {
+                    stateNotif.innerText = "Akses kamera ditolak!";
+                }
+                
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                let iosInstruction = "Izin akses kamera diblokir oleh sistem browser Anda.";
+                if (isIOS) {
+                    iosInstruction = `
+                        <div class="space-y-3 text-left">
+                            <p class="font-bold text-rose-600">⚠️ IZIN KAMERA iPHONE TERKUNCI</p>
+                            <p>Saat dibuka melalui **WhatsApp / Telegram**, iOS memblokir modul kamera internal browser bawaan secara paksa.</p>
+                            <p class="font-bold text-slate-800">Cara Mengaktifkan:</p>
+                            <ol class="list-decimal pl-4 space-y-1 text-slate-700">
+                                <li>Ketuk <strong>tombol Safari/Kompas</strong> di pojok kanan bawah layar untuk beralih ke <strong>Safari Utama</strong>.</li>
+                                <li>Atau buka <strong>Pengaturan iPhone</strong> &rarr; <strong>Safari</strong> &rarr; <strong>Kamera</strong> &rarr; Pilih <strong>Izinkan (Allow)</strong>.</li>
+                                <li>Segarkan halaman web ini.</li>
+                            </ol>
+                            <p class="text-emerald-700 font-semibold italic">Alternatif cepat: Gunakan tombol "Scan dari File / Galeri" di bawah untuk memproses barcode tanpa kamera.</p>
+                        </div>
+                    `;
+                } else {
+                    iosInstruction += "<br><br>Pastikan Anda menggunakan protokol HTTPS dan telah mengaktifkan hak akses kamera pada browser.";
+                }
+                showCustomAlert("Izin Kamera Diblokir", iosInstruction, "warning");
+                return;
+            }
+
+            html5QrCode = new Html5Qrcode("qrReader");
+            const config = { 
+                fps: 20, 
+                qrbox: function(width, height) {
+                    const minEdge = Math.min(width, height);
+                    const boxSize = Math.floor(minEdge * 0.7);
+                    return { width: boxSize, height: boxSize };
+                },
+                aspectRatio: 1.0 
+            };
+
+            html5QrCode.start(
+                { facingMode: currentFacingMode },
+                config,
+                onScanSuccess,
+                onScanFailure
+            ).then(() => {
+                if (stateNotif) {
+                    stateNotif.innerText = "Kamera Aktif: Mode " + (currentFacingMode === "environment" ? "Belakang" : "Depan");
+                }
+            }).catch(err => {
+                console.error("Html5Qrcode gagal dimuat:", err);
+                if (stateNotif) {
+                    stateNotif.innerText = "Kamera gagal dirender!";
+                }
+                showCustomAlert("Gagal Memuat Kamera", "Gagal merender modul kamera. Silakan gunakan alternatif scan galeri di bawah.", "warning");
+            });
+        }
+
+        async function stopScannerSafe() {
+            const stateNotif = document.getElementById('scannerNotification');
+            try {
+                if (html5QrCode) {
+                    if (html5QrCode.getState() === 2) {
+                        await html5QrCode.stop();
+                    }
+                    html5QrCode.clear();
+                }
+                const readerEl = document.getElementById('qrReader');
+                if (readerEl) readerEl.innerHTML = '';
+                if (stateNotif) {
+                    stateNotif.innerText = "Kamera Nonaktif";
+                }
+            } catch (err) {
+                console.warn("Kamera dihentikan.", err);
+            }
+        }
+
+        function triggerFileScan() {
+            document.getElementById('qrFileInput').click();
+        }
+
+        function handleQrFileScan(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            showLoading("Membaca & mendekode pola QR...");
+            const tempScanner = new Html5Qrcode("qrReader");
+            tempScanner.scanFile(file, true)
+                .then(decodedText => {
+                    hideLoading();
+                    onScanSuccess(decodedText);
+                    e.target.value = ""; 
+                })
+                .catch(err => {
+                    hideLoading();
+                    console.error("Gagal mendekode gambar QR:", err);
+                    showCustomAlert(
+                        "QR Tidak Terdeteksi", 
+                        "Sistem tidak mendeteksi pola QR Code pada berkas tersebut. Harap pastikan foto fokus, tegak, dan bercahaya terang.", 
+                        "error"
+                    );
+                    e.target.value = ""; 
+                });
+        }
+
+        function onScanSuccess(decodedText) {
+            stopScannerSafe();
+            const scannedId = decodedText.trim();
+            
+            const p = appState.peserta.find(x => x.id === scannedId);
+            if (!p) {
+                showCustomAlert("ID Salah", "ID Kartu QR (" + scannedId + ") Tidak Terdaftar di Database!", "error");
+                startScanner();
+                return;
+            }
+            
+            const IsExist = appState.presensi.some(x => x.id === scannedId && String(x.sesi) === String(appState.sesiAktif.sesiKe));
+            if (IsExist) {
+                showCustomAlert("Sudah Absen", "Peserta " + p.nama + " Sudah Melakukan Presensi di Sesi " + appState.sesiAktif.sesiKe + " ini!", "warning");
+                startScanner();
+                return;
+            }
+
+            const now = new Date();
+            const startHourStr = appState.sesiAktif.waktu || "08:00";
+            const [sh, sm] = startHourStr.split(':').map(Number);
+            const startTime = new Date();
+            startTime.setHours(sh, sm, 0, 0);
+
+            const diffMs = now - startTime;
+            const diffMins = Math.floor(diffMs / 1000 / 60);
+            const maxLate = parseInt(appState.sesiAktif.durasiTelat || 15);
+
+            let statusHadir = "Tepat Waktu";
+            if (diffMins > maxLate) {
+                statusHadir = `Terlambat (${diffMins} Menit)`;
+            }
+
+            const formatWaktu = now.toISOString(); 
+            
+            const newLog = {
+                id: p.id,
+                nama: p.nama,
+                utusan: p.utusan,
+                materi: appState.sesiAktif.materi,
+                waktu: formatWaktu,
+                status: statusHadir,
+                sesi: appState.sesiAktif.sesiKe,
+                synced: false 
+            };
+
+            appState.presensi.unshift(newLog);
+            appState.stats.hadir += 1;
+            if (statusHadir === "Tepat Waktu") {
+                appState.stats.tepat += 1;
+            } else {
+                appState.stats.terlambat += 1;
+            }
+            saveState();
+
+            triggerScanUIFeedback(newLog);
+
+            if (IS_PREVIEW) {
+                newLog.synced = true;
+                saveState();
+                renderScanLogTable();
+                startScanner();
+            } else {
+                const latencyWatchdog = setTimeout(() => {
+                    showLoading("Sinkronisasi presensi dengan Google Sheets...");
+                }, 1500);
+
+                fetch(GAS_URL + `?action=submitScan&id=${scannedId}&user=${appState.currentUser.username}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        clearTimeout(latencyWatchdog);
+                        hideLoading();
+                        if (data.status === "success") {
+                            appState.presensi = data.presensi;
+                            appState.stats = data.stats;
+                            
+                            const matchLog = appState.presensi.find(x => x.id === scannedId && String(x.sesi) === String(appState.sesiAktif.sesiKe));
+                            if (matchLog) matchLog.synced = true;
+                            
+                            saveState();
+                            renderScanLogTable();
+                        } else {
+                            showCustomAlert("Sinkronisasi Gagal", data.message, "warning");
+                        }
+                        startScanner();
+                    }).catch(err => { 
+                        clearTimeout(latencyWatchdog);
+                        hideLoading();
+                        handleCloudFetchError(err, "Sinkronisasi Latar Belakang");
+                        startScanner(); 
+                    });
+            }
+        }
+
+        function onScanFailure(error) {}
+
+        function triggerScanUIFeedback(log) {
+            const rBox = document.getElementById('scanResultBox');
+            document.getElementById('scanResNama').innerText = log.nama;
+            document.getElementById('scanResUtusan').innerText = log.utusan;
+            
+            const p = appState.peserta.find(x => x.id === log.id);
+            const photoContainer = document.getElementById('scanResPhotoContainer');
+            if (p && p.foto) {
+                photoContainer.innerHTML = `<img src="${p.foto}" class="w-full h-full object-cover">`;
+            } else {
+                photoContainer.innerHTML = `<i data-lucide="user" class="w-6 h-6"></i>`;
+                lucide.createIcons();
+            }
+            
+            const badge = document.getElementById('scanResBadge');
+            badge.innerText = log.status;
+            if(log.status.includes("Tepat Waktu")) {
+                badge.className = "inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-600 text-white";
+            } else {
+                badge.className = "inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500 text-slate-900";
+            }
+            rBox.classList.remove('hidden');
+            renderScanLogTable();
+        }
+
+        function renderScanLogTable() {
+            const tbody = document.getElementById('listScanLog');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            if (appState.presensi.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-slate-400">Belum ada aktivitas pemindaian.</td></tr>`;
+                return;
+            }
+            
+            appState.presensi.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100 font-medium text-slate-700 transition";
+                const p = appState.peserta.find(x => String(x.id).trim().toLowerCase() === String(log.id).trim().toLowerCase());
+                const imgHTML = p && p.foto ? 
+                    `<img src="${p.foto}" class="w-7 h-7 rounded-full object-cover shrink-0 border border-emerald-500">` : 
+                    `<div class="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-slate-400 shrink-0"><i data-lucide="user" class="w-4 h-4"></i></div>`;
+                
+                const syncStatusHTML = log.synced === false ? 
+                    `<span class="text-[9px] text-amber-500 font-bold flex items-center gap-0.5"><i data-lucide="refresh-cw" class="w-2.5 h-2.5 animate-spin"></i> Pending</span>` : 
+                    `<span class="text-[9px] text-emerald-600 font-bold flex items-center gap-0.5"><i data-lucide="check" class="w-2.5 h-2.5"></i> Synced</span>`;
+
+                tr.innerHTML = `
+                    <td class="p-2.5 font-bold flex items-center space-x-2">
+                        ${imgHTML}
+                        <div class="flex flex-col">
+                            <span class="truncate max-w-[120px]">${log.nama}</span>
+                            ${syncStatusHTML}
+                        </div>
+                    </td>
+                    <td class="p-2.5 text-slate-600 truncate max-w-[120px]">${log.materi || '-'}</td>
+                    <td class="p-2.5 font-semibold text-slate-700 text-center">Sesi ${log.sesi || '-'}</td>
+                    <td class="p-2.5 font-mono text-[11px] text-slate-600 font-medium">${formatWaktuRekap(log.waktu)}</td>
+                    <td class="p-2.5"><span class="text-[10px] font-bold px-2 py-0.5 rounded ${log.status.includes("Tepat Waktu") ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}">${log.status}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function triggerLogoUpload() {
+            document.getElementById('inputLogoInRekap').click();
+        }
+
+        // Logo rekap dikompres maksimal 100x100 dengan kualitas kompresi ekstrim (0.5 JPEG)
+        function handleLogoUploadInRekap(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const r = new FileReader();
+            r.onload = function(evt) {
+                const rawBase64 = evt.target.result;
+                compressImageBase64(rawBase64, 100, 100, 0.5, function(compressedBase64) {
+                    const imgTag = `<img src="${compressedBase64}" class="w-full h-full object-contain">`;
+                    appState.branding.logo = imgTag;
+                    saveState();
+                    renderBrandingUI();
+                    if(!IS_PREVIEW) updateBrandingCloud();
+                });
+            };
+            r.readAsDataURL(file);
+        }
+
+        function openBrandingModal() {
+            document.getElementById('brandAppName').value = appState.branding.appName;
+            document.getElementById('brandOrganisasi').value = appState.branding.organisasi;
+            document.getElementById('brandCabang').value = appState.branding.cabang;
+            document.getElementById('brandLogoData').value = '';
+            
+            document.querySelectorAll('[data-theme]').forEach(btn => {
+                if(btn.getAttribute('data-theme') === appState.branding.themeColor) {
+                    btn.classList.add('border-slate-900', 'scale-110');
+                } else {
+                    btn.classList.remove('border-slate-900', 'scale-110');
+                }
+            });
+            document.getElementById('modalBranding').classList.remove('hidden');
+        }
+
+        // Logo branding dikompres maksimal 100x100 dengan kualitas kompresi ekstrim (0.5 JPEG)
+        function handleBrandLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const r = new FileReader();
+            r.onload = function(evt) {
+                const rawBase64 = evt.target.result;
+                compressImageBase64(rawBase64, 100, 100, 0.5, function(compressedBase64) {
+                    document.getElementById('brandLogoData').value = compressedBase64;
+                });
+            };
+            r.readAsDataURL(file);
+        }
+
+        function setTheme(color, event) {
+            appState.branding.themeColor = color;
+            if (event && event.currentTarget) {
+                document.querySelectorAll('[data-theme]').forEach(b => b.classList.remove('border-slate-900', 'scale-110'));
+                event.currentTarget.classList.add('border-slate-900', 'scale-110');
+            }
+        }
+
+        function handleSaveBranding(e) {
+            e.preventDefault();
+            appState.branding.appName = document.getElementById('brandAppName').value.trim();
+            appState.branding.organisasi = document.getElementById('brandOrganisasi').value.trim().toUpperCase();
+            appState.branding.cabang = document.getElementById('brandCabang').value.trim().toUpperCase();
+            
+            const lData = document.getElementById('brandLogoData').value;
+            if(lData) {
+                appState.branding.logo = `<img src="${lData}" class="w-full h-full object-contain">`;
+            }
+
+            saveState();
+            renderBrandingUI();
+            closeModals();
+            showCustomAlert("Branding Diupdate", "Kustomisasi branding global berhasil diterapkan!", "success");
+            if(!IS_PREVIEW) updateBrandingCloud();
+        }
+
+        function updateBrandingCloud() {
+            showLoading("Sinkronisasi Setelan Identitas...");
+            fetch(GAS_URL + "?action=saveBranding", {
+                method: 'POST',
+                body: JSON.stringify({ user: appState.currentUser.username, branding: appState.branding })
+            }).then(res => res.json())
+            .then(data => { hideLoading(); if(data.status !== "success") showCustomAlert("Sinkronisasi Gagal", data.message, "error"); })
+            .catch(err => { 
+                handleCloudFetchError(err, "Sinkronisasi Branding Organisasi");
+            });
+        }
+
+        function openModalTim() {
+            document.getElementById('formTim').reset();
+            document.getElementById('modalTim').classList.remove('hidden');
+        }
+
+        function handleUpdateSesi(e) {
+            e.preventDefault();
+            const sesiData = {
+                jenis: document.getElementById('sesiJenis').value,
+                materi: document.getElementById('sesiMateri').value.trim(),
+                instruktur: document.getElementById('sesiInstruktur').value.trim(),
+                sesiKe: document.getElementById('sesiKe').value.trim(),
+                waktu: document.getElementById('sesiWaktu').value.trim(), 
+                durasiTelat: document.getElementById('sesiDurasiTelat').value.trim(), 
+                restLimit: document.getElementById('sesiRestLimit').value.trim() 
+            };
+
+            appState.sesiAktif = sesiData;
+            saveState();
+            showCustomAlert("Sesi Diperbarui", "Konfigurasi sesi berhasil diperbarui!", "success");
+            
+            if (!IS_PREVIEW) {
+                showLoading("Sinkronisasi Sesi...");
+                fetch(GAS_URL + "?action=updateSesi", {
+                    method: 'POST',
+                    body: JSON.stringify({ user: appState.currentUser.username, sesi: sesiData })
+                }).then(res => res.json())
+                .then(data => {
+                    hideLoading();
+                    if (data.status !== "success") showCustomAlert("Gagal Sinkronisasi", data.message, "error");
+                }).catch(err => { 
+                    handleCloudFetchError(err, "Sinkronisasi Sesi Kaderisasi");
+                });
+            }
+        }
+
+        function handleSaveTeam(e) {
+            e.preventDefault();
+            const tData = {
+                username: document.getElementById('t-username').value.trim().toLowerCase(),
+                password: document.getElementById('t-password').value,
+                nama: document.getElementById('t-nama').value.trim(),
+                role: document.getElementById('t-role').value
+            };
+
+            if(IS_PREVIEW) {
+                appState.tim.push(tData);
+                saveState();
+                closeModals();
+                renderTimView();
+            } else {
+                showLoading("Mendaftarkan Operator...");
+                fetch(GAS_URL + "?action=saveTeam", {
+                    method: 'POST',
+                    body: JSON.stringify({ user: appState.currentUser.username, tim: tData })
+                }).then(res => res.json())
+                .then(data => {
+                    hideLoading();
+                    if(data.status === "success") {
+                        appState.tim = data.tim;
+                        saveState();
+                        closeModals();
+                        renderTimView();
+                    } else { showCustomAlert("Gagal Menyimpan", data.message, "error"); }
+                }).catch(err => { 
+                    handleCloudFetchError(err, "Pendaftaran Operator Lapangan");
+                });
+            }
+        }
+
+        function handleDeleteTeam(username) {
+            showCustomConfirm("Hapus Akses", "Hapus hak akses operator @" + username + "?", () => {
+                if(IS_PREVIEW) {
+                    appState.tim = appState.tim.filter(x => x.username !== username);
+                    saveState();
+                    renderTimView();
+                } else {
+                    showLoading("Mencabut Akses...");
+                    fetch(GAS_URL + `?action=deleteTeam&username=${username}&user=${appState.currentUser.username}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            hideLoading();
+                            if(data.status === "success") {
+                                appState.tim = data.tim;
+                                saveState();
+                                renderTimView();
+                            } else { showCustomAlert("Gagal Mencabut", data.message, "error"); }
+                        }).catch(err => { 
+                            handleCloudFetchError(err, "Mencabut Hak Akses Operator");
+                        });
+                }
+            });
+        }
+
+        function syncStateWithCloud() {
+            fetch(GAS_URL + "?action=syncState", {
+                method: 'POST',
+                body: JSON.stringify({ state: appState })
+            }).catch(e => console.error("Gagal sinkronisasi data presensi:", e));
+        }
+
+        function printIdCard() { 
+            document.body.classList.add('print-idcard'); 
+            window.print(); 
+            setTimeout(() => document.body.classList.remove('print-idcard'), 1000); 
+        }
+        
+        function printRekap() { 
+            document.body.classList.add('print-rekap'); 
+            window.print(); 
+            setTimeout(() => document.body.classList.remove('print-rekap'), 1000); 
+        }
+
+        function showLoading(txt) {
+            document.getElementById('loadingText').innerText = txt;
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            
+            const progContainer = document.getElementById('loadingProgressContainer');
+            const progBar = document.getElementById('loadingProgressBar');
+            const timerText = document.getElementById('loadingTimerText');
+            
+            progContainer.classList.remove('hidden');
+            timerText.classList.remove('hidden');
+            progBar.style.width = '0%';
+            progBar.className = "bg-emerald-600 h-2.5 rounded-full transition-all duration-300";
+            
+            clearInterval(loadingTimerInterval);
+            loadingStartTimestamp = Date.now();
+            
+            loadingTimerInterval = setInterval(() => {
+                const secondsElapsed = Math.floor((Date.now() - loadingStartTimestamp) / 1000);
+                const progressPercent = Math.min((secondsElapsed / 30) * 100, 100);
+                progBar.style.width = `${progressPercent}%`;
+                document.getElementById('loadingTimerVal').innerText = secondsElapsed;
+                
+                if (secondsElapsed >= 30) {
+                    document.getElementById('loadingText').innerText = "Waktu tunggu habis. Menjalankan proses latar belakang...";
+                    progBar.className = "bg-rose-500 h-2.5 rounded-full";
+                    clearInterval(loadingTimerInterval);
+                }
+            }, 250); 
+        }
+
+        function hideLoading() {
+            clearInterval(loadingTimerInterval);
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        function exportToExcel() {
+            if (appState.presensi.length === 0) {
+                showCustomAlert("Eksport Batal", "Tidak ada data presensi untuk diekspor!", "warning");
+                return;
+            }
+            const dataPersiapan = appState.presensi.map(x => ({
+                'Nama Lengkap': x.nama,
+                'Asal Utusan / PAC': x.utusan,
+                'Sesi Pertemuan': x.sesi,
+                'Materi Kaderisasi': x.materi,
+                'Waktu Pemindaian': formatWaktuRekap(x.waktu),
+                'Status Kehadiran': x.status,
+                'Mulai Istirahat': x.breakStartStr || '-',
+                'Kembali Istirahat': x.breakEndStr || '-',
+                'Status Istirahat': x.breakStatus || '-'
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(dataPersiapan);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Rekap Presensi");
+            XLSX.writeFile(wb, `REKAP_PRESENSI_${appState.sesiAktif.jenis}_SESSION.xlsx`);
+        }
+    </script>
+</body>
+</html>
